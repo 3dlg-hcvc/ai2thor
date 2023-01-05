@@ -46,7 +46,15 @@ public class ConvertGLTF : MonoBehaviour
     {
         MethodInfo export_method = typeof(GLTFExportMenu).GetMethod("Export", BindingFlags.NonPublic | BindingFlags.Static);
         Transform[] transforms = new Transform[] {game_object.transform};
-        export_method.Invoke(null, new object[] {transforms, true, game_object.name});
+        string output_filename = game_object.name;
+        bool already_exist = File.Exists(output_dir + "/" + game_object.name + ".glb");
+        int suffix = 1;
+        while (already_exist) {
+            output_filename = game_object.name + "_" + suffix.ToString();
+            already_exist = File.Exists(output_dir + "/" + output_filename + ".glb");
+            suffix += 1;
+        }
+        export_method.Invoke(null, new object[] {transforms, true, output_filename});
 
         Transform[] children_nodes;
         children_nodes = game_object.GetComponentsInChildren<Transform>(true);
@@ -87,7 +95,7 @@ public class ConvertGLTF : MonoBehaviour
                 asset_metadata[child_node.GetInstanceID().ToString()][typeof(MonoBehaviour).Name] = script_metadata;
             }
         }
-        File.WriteAllText(output_dir + "/" + game_object.name + ".json", asset_metadata.ToString());
+        File.WriteAllText(output_dir + "/" + output_filename + ".json", asset_metadata.ToString());
     }
 
 #if UNITY_EDITOR
