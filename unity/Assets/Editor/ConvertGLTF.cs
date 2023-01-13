@@ -127,6 +127,8 @@ public class ConvertGLTF : MonoBehaviour
         foreach (string scene_guid in scene_guids) {
             var scene_path = AssetDatabase.GUIDToAssetPath(scene_guid);
             Scene scene = UnityEditor.SceneManagement.EditorSceneManager.OpenScene(scene_path);
+            string scene_name = scene.name;
+            string floorplan_name = scene_name.Replace("_physics", "");
             GameObject[] roots = scene.GetRootGameObjects();
             foreach (GameObject root in roots) {
                 if (root.name == "Objects" || root.name == "Structure") {
@@ -138,9 +140,22 @@ public class ConvertGLTF : MonoBehaviour
                     Vector3 root_position = root.transform.localPosition;
                     foreach (Transform child in root.transform) {
                         Debug.Log(child.name);
-                        GameObject game_object = child.gameObject;
-                        game_object.transform.Translate(root_position, Space.World);
-                        ExportObject(game_object, output_dir);
+                        if (child.name == "HideAndSeek" || child.name == "HideAndSeekSingleCount")
+                            continue;
+
+                        if (child.name == floorplan_name) {
+                            Vector3 tmp_position = child.transform.localPosition;
+                            foreach (Transform child2 in child.transform) {
+                                GameObject game_object2 = child2.gameObject;
+                                game_object2.transform.Translate(root_position + tmp_position, Space.World);
+                                ExportObject(game_object2, output_dir);
+                            }    
+                        }
+                        else {
+                            GameObject game_object = child.gameObject;
+                            game_object.transform.Translate(root_position, Space.World);
+                            ExportObject(game_object, output_dir);
+                        }
                     }
                 }
             }

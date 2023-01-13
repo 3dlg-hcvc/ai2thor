@@ -14,11 +14,11 @@ public class Build {
     // must be copied over from the Standalone platform.  As well, continuing to use this ensures that settings made for 
     // the Standalone platform get used for CloudRendering
     static void InitializeCloudRendering() {
-        PlayerSettings.SetApiCompatibilityLevel(BuildTargetGroup.CloudRendering, PlayerSettings.GetApiCompatibilityLevel(BuildTargetGroup.Standalone));
+        PlayerSettings.SetApiCompatibilityLevel(BuildTargetGroup.LinuxHeadlessSimulation, PlayerSettings.GetApiCompatibilityLevel(BuildTargetGroup.Standalone));
         var graphicsTiers = new List<GraphicsTier>(){GraphicsTier.Tier1, GraphicsTier.Tier2, GraphicsTier.Tier3};
         foreach (var graphicsTier in graphicsTiers) {
             EditorGraphicsSettings.SetTierSettings(
-                BuildTargetGroup.CloudRendering,
+                BuildTargetGroup.LinuxHeadlessSimulation,
                 graphicsTier,
                 EditorGraphicsSettings.GetTierSettings(BuildTargetGroup.Standalone, graphicsTier)
             );
@@ -39,7 +39,7 @@ public class Build {
 
     static void CloudRendering() {
         InitializeCloudRendering();
-        build(GetBuildName(), BuildTargetGroup.CloudRendering, BuildTarget.CloudRendering);
+        build(GetBuildName(), BuildTargetGroup.LinuxHeadlessSimulation, BuildTarget.LinuxHeadlessSimulation);
     }
 
     static void WebGL() {
