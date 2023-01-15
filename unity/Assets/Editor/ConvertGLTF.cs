@@ -172,10 +172,24 @@ public class ConvertGLTF : MonoBehaviour
 
             Debug.Log(material_path);
             Material mat = Resources.Load(material_path.Replace(recources_path, "").Replace(".mat", ""), typeof(Material)) as Material;
-            if (mat == null)
-                Debug.Log("Failed to load material");
+            if (mat == null) {
+                Debug.Log("Failed to load material: " + material_path);
+                continue;
+            }
 
             Shader shader = mat.shader;
+            if (shader == null)
+                Debug.Log("Failed to load share: " + mat.name);
+
+            string folder_path = path + "/" + mat.name;
+            if(!Directory.Exists(folder_path)) {
+                Directory.CreateDirectory(folder_path);
+            }
+            
+            JObject metadata = new JObject();
+            metadata["Texture"] = new JObject();
+            metadata["Float"] = new JObject();
+            metadata["Color"] = new JObject();
             for (int i = 0; i < shader.GetPropertyCount(); i++) {
                 string property_name = shader.GetPropertyName(i);
                 var property_type = shader.GetPropertyType(i);
@@ -188,10 +202,25 @@ public class ConvertGLTF : MonoBehaviour
                     string asset_path = AssetDatabase.GetAssetPath(instance_id);
                     Debug.Log(property_name + "instance id : " + instance_id);
                     Debug.Log(property_name + "asset path : " + asset_path);
-                    FileUtil.CopyFileOrDirectory(asset_path, path + "/" + Path.GetFileName(asset_path));
+                    string file_path = folder_path + "/" + Path.GetFileName(asset_path);
+                    if(!File.Exists(file_path)) {
+                        FileUtil.CopyFileOrDirectory(asset_path, file_path);
+                        metadata["Texture"][property_name] = file_path;
+                    }
+                }
+                else if (property_type == UnityEngine.Rendering.ShaderPropertyType.Float) {
+                    float parameter = mat.GetFloat(property_name);
+                    metadata["Float"][property_name] = parameter;
+                    Debug.Log(property_name + " : " + parameter.ToString());
+                }
+                else if (property_type == UnityEngine.Rendering.ShaderPropertyType.Color) {
+                    Color color = mat.GetColor(property_name);
+                    string color_json = JsonUtility.ToJson(color);
+                    metadata["Color"][property_name] = JObject.Parse(color_json);
+                    Debug.Log(property_name + " : " + color.ToString());
                 }
             }
-            break;
+            File.WriteAllText(folder_path + "/" + mat.name + ".json", metadata.ToString());
         }
     }
 
