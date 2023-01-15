@@ -162,6 +162,38 @@ public class ConvertGLTF : MonoBehaviour
         }
     }
 
+    [MenuItem("ConvertGLTF/Export materials")]
+    public static void ExportMaterials() {
+        var path = EditorUtility.SaveFolderPanel("Texture Export Path", GLTFSceneExporter.SaveFolderPath, "procthor-material");
+        string recources_path = "Assets/Resources/";
+        string[] material_guids = AssetDatabase.FindAssets("t:Material", new string[] {recources_path});
+        foreach (string material_guid in material_guids) {
+            var material_path = AssetDatabase.GUIDToAssetPath(material_guid);
+
+            Debug.Log(material_path);
+            Material mat = Resources.Load(material_path.Replace(recources_path, "").Replace(".mat", ""), typeof(Material)) as Material;
+            if (mat == null)
+                Debug.Log("Failed to load material");
+
+            Shader shader = mat.shader;
+            for (int i = 0; i < shader.GetPropertyCount(); i++) {
+                string property_name = shader.GetPropertyName(i);
+                var property_type = shader.GetPropertyType(i);
+                if (property_type == UnityEngine.Rendering.ShaderPropertyType.Texture) {
+                    Texture texture = mat.GetTexture(property_name);
+                    Debug.Log(property_name + " : " + texture?.name, texture);
+                    if (texture == null)
+                        continue;
+                    int instance_id = texture.GetInstanceID();
+                    string asset_path = AssetDatabase.GetAssetPath(instance_id);
+                    Debug.Log(property_name + "instance id : " + instance_id);
+                    Debug.Log(property_name + "asset path : " + asset_path);
+                }
+            }
+            break;
+        }
+    }
+
 # endif
 
 }
