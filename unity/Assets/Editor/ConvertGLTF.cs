@@ -188,6 +188,7 @@ public class ConvertGLTF : MonoBehaviour
                     string asset_path = AssetDatabase.GetAssetPath(instance_id);
                     Debug.Log(property_name + "instance id : " + instance_id);
                     Debug.Log(property_name + "asset path : " + asset_path);
+                    FileUtil.CopyFileOrDirectory(asset_path, path + "/" + Path.GetFileName(asset_path));
                 }
             }
             break;
